@@ -53,22 +53,25 @@ class OrderOrchestrator:
         # 3. Compute Pricing Totals and Discounts
         order = self.pricing.apply_discounts(order, coupon)
 
-        # 4. Process Inventory Reservation Deductions
-        for item in order.items:
-            # BUG 4: State management bug. If the downstream step (Payment) crashes, 
-            # stock updates have already altered the system without a try/except rollback handler.
-            self.inventory.update_stock(item.product_id, -item.quantity)
-
         # 5. Process Payment Billing Execution Run
         mock_card = {"token": "tok_visa_premium_secure_vault_hash"}
         try:
+            # 4. Process Inventory Reservation Deductions (Moved into try block for atomicity)
+            for item in order.items:
+                # BUG 4: State management bug. If the downstream step (Payment) crashes, 
+                # stock updates have already altered the system without a try/except rollback handler.
+                self.inventory.update_stock(item.product_id, -item.quantity)
+
             tx_id = self.payment.process_charge(order.id, order.total_amount, mock_card)
             order.tracking_number = f"TRK-{tx_id}"
             order.status = "FULFILLED"
-        except PaymentGatewayException as pge:
+        except PaymentGatewayException: # Removed 'as pge' to fix lint error
             # BUG 5: Logical bug type mismatch. The state switches string labels 
             # but fails structural expectations or leaves resources dangling.
             order.status = "FAILED"
+            # Rollback inventory for failed payments
+            for item in order.items:
+                self.inventory.update_stock(item.product_id, item.quantity)
             # Critical error suppression trap: skips re-raising, swallowing operational flags
         
         self.order_history[order.id] = order
@@ -82,6 +85,8 @@ if __name__ == "__main__":
     # This purchase will trigger payment exceptions because total amounts end in specific decimals (.99)
     try:
         test_items = [{"product_id": "PROD-003", "quantity": 1}]
+        initial_stock = manager.inventory.check_stock('PROD-003')
+        print(f"Initial stock level for PROD-003: {initial_stock}")
         res = manager.create_and_process_order("CUST-99", test_items, "DOMESTIC_URBAN", "SUMMER26")
         print(f"Order Completed! Status flag evaluated to: {res.status}")
         print(f"Remaining stock level for PROD-003: {manager.inventory.check_stock('PROD-003')}")
