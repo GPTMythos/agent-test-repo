@@ -1,0 +1,21 @@
+{
+  "head_sha": "cc37e36a1bf12801f7d76b0a81b2062087da1c7c",
+  "ingested_at": 1783591158.0898035,
+  "node_count": 38,
+  "edge_count": 131,
+  "repo_name": "agent-test-repo",
+  "languages": {
+    "python": 7,
+    "markdown": 1
+  },
+  "file_count": 8,
+  "embedding_backend": "sentence-transformers",
+  "ingest_seconds": 17.55,
+  "summaries_manifest": {
+    "repo_summary": "D:\\OneDrive - Quadratic Insights Pvt Ltd\\Desktop\\GIT_ai\\agent_workspace\\agent-test-repo-issue-3\\.gitfix_intelligence\\summaries\\REPO.md",
+    "package_summaries": {
+      ".": "D:\\OneDrive - Quadratic Insights Pvt Ltd\\Desktop\\GIT_ai\\agent_workspace\\agent-test-repo-issue-3\\.gitfix_intelligence\\summaries\\packages\\_root.md",
+      "models": "D:\\OneDrive - Quadratic Insights Pvt Ltd\\Desktop\\GIT_ai\\agent_workspace\\agent-test-repo-issue-3\\.gitfix_intelligence\\summaries\\packages\\models.md"
+    }
+  }
+}
